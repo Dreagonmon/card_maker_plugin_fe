@@ -1,0 +1,6 @@
+[submodule "lib/openlibm"]
+	path = lib/openlibm
+	url = https://github.com/JuliaMath/openlibm.git
+[submodule "lib/fe"]
+	path = lib/fe
+	url = https://github.com/rxi/fe.git

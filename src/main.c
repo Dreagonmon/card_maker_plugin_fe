@@ -19,16 +19,63 @@ fe_Context *ctx = NULL;
 //   fe_collect_garbage(ctx);
 // }
 
-WASM_EXPORT("eval_vfile")
-void eval_vfile(const void *vfile) {
-  // compile
+// WASM_EXPORT("eval_vfile")
+// void eval_vfile(const void *vfile) {
+//   // compile
+//   fe_Object *inst = fe_readvfp(ctx, vfile);
+//   // eval
+//   fe_Object *res = fe_eval(ctx, inst);
+//   /* clean
+//    * restore GC stack which would now contain both the read object and
+//    * result from evaluation */
+//   fe_restoregc(ctx, gc_pos);
+//   fe_collect_garbage(ctx);
+// }
+
+WASM_EXPORT("eval")
+void eval() {
+  int local_gc = fe_savegc(ctx);
+  // get vfile name
+  fe_Object *objs[2];
+  objs[0] = fe_symbol(ctx, "getstr");
+  objs[1] = fe_string(ctx, "script_file");
+  fe_Object *filename = fe_eval(ctx, fe_list(ctx, objs, 2));
+  // check
+  if (fe_isnil(ctx, filename)) {
+    printf("Error: string variable \"script_file\" is nil.\n");
+    return;
+  }
+  // open vfile
+  objs[0] = fe_symbol(ctx, "vfopen");
+  objs[1] = filename;
+  fe_Object *vfp_obj = fe_eval(ctx, fe_list(ctx, objs, 2));
+  // check
+  if (fe_isnil(ctx, vfp_obj)) {
+    printf("Error: failed to open script file.\n");
+    return;
+  }
+  void *vfile = fe_toptr(ctx, vfp_obj);
+
+  // gc
+  fe_restoregc(ctx, local_gc);
+
+  // eval file
+  //   compile
   fe_Object *inst = fe_readvfp(ctx, vfile);
-  // eval
+  //   eval
   fe_Object *res = fe_eval(ctx, inst);
-  /* clean
-   * restore GC stack which would now contain both the read object and
-   * result from evaluation */
-  fe_restoregc(ctx, gc_pos);
+
+  // gc
+  fe_restoregc(ctx, local_gc);
+
+  // close file
+  local_gc = fe_savegc(ctx);
+  objs[0] = fe_symbol(ctx, "vfclose");
+  objs[1] = fe_ptr(ctx, vfile);
+  fe_eval(ctx, fe_list(ctx, objs, 2));
+
+  // gc
+  fe_restoregc(ctx, local_gc);
   fe_collect_garbage(ctx);
 }
 

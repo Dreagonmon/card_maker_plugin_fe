@@ -1,4 +1,4 @@
-# required packages: clang, lld
+# required packages: clang, llvm, wabt
 # todo: using binaryen
 
 BUILD = build

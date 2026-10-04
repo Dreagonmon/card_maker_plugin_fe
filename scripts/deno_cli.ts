@@ -38,9 +38,12 @@ const scripts = `
 
     (setstr "result" "你好世界")
     (setnum "free" (memfree))
+
     (let retext (read_file "main.fe"))
-    (print "File Content:")
+    (print "======== File Content ========")
     (print retext)
+    (print "======== File End ========")
+
     (let x (cons 2 3))
     (setcar x 999)
     (print "x =" x)
@@ -56,10 +59,12 @@ if (import.meta.main) {
         console.log("> variable changed:", event.data.name, "=", event.data.value, "<");
     });
     await module.initInstance();
-    const exp = module.getExportedFunctions<{ eval_vfile?: (readerId: number) => void; }>();
+    const exp = module.getExportedFunctions<{ eval?: () => void }>();
     // write file
     const encoder = new TextEncoder();
     module.filesystem.writeFile("main.fe", encoder.encode(scripts));
-    const readerId = module.filesystem.openFileReader("main.fe");
-    exp.eval_vfile?.(readerId);
+    // set parameters
+    module.setVariable("script_file", "main.fe");
+    // eval
+    exp.eval?.();
 }

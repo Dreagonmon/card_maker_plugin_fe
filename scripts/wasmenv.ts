@@ -16,9 +16,9 @@ const lenientUTF8Encoder = new TextEncoder();
 
 const utf8ExpectedLength = (b0: number): number => {
     const expected = b0 <= 0x7f ? 1
-        : b0 >= 0xc2 && b0 <= 0xdf ? 2
-            : b0 >= 0xe0 && b0 <= 0xef ? 3
-                : b0 >= 0xf0 && b0 <= 0xf4 ? 4 : -1;
+    : b0 >= 0xc2 && b0 <= 0xdf ? 2
+    : b0 >= 0xe0 && b0 <= 0xef ? 3
+    : b0 >= 0xf0 && b0 <= 0xf4 ? 4 : -1;
     return expected;
 };
 
@@ -234,17 +234,17 @@ export class WASMEnv extends EventTarget {
             env: {
                 memory: this.providedMemmory,
                 wasmenv_clock_ms: this.api_wasmenv_clock_ms.bind(this),
-                wasmenv_time_ms: this.api_wasmenv_time_ms.bind(this),
-                wasmenv_abort: this.api_wasmenv_abort.bind(this),
-                wasmenv_putc: this.api_wasmenv_putc.bind(this),
-                vfile_open: this.api_vfile_open.bind(this),
-                vfile_close: this.api_vfile_close.bind(this),
-                vfile_getc: this.api_vfile_getc.bind(this),
-                set_string: this.api_set_string.bind(this),
-                set_number: this.api_set_number.bind(this),
-                get_string_length: this.api_get_string_length.bind(this),
-                get_string: this.api_get_string.bind(this),
-                get_number: this.api_get_number.bind(this),
+                                                          wasmenv_time_ms: this.api_wasmenv_time_ms.bind(this),
+                                                          wasmenv_abort: this.api_wasmenv_abort.bind(this),
+                                                          wasmenv_putc: this.api_wasmenv_putc.bind(this),
+                                                          vfile_open: this.api_vfile_open.bind(this),
+                                                          vfile_close: this.api_vfile_close.bind(this),
+                                                          vfile_getc: this.api_vfile_getc.bind(this),
+                                                          set_string: this.api_set_string.bind(this),
+                                                          set_number: this.api_set_number.bind(this),
+                                                          get_string_length: this.api_get_string_length.bind(this),
+                                                          get_string: this.api_get_string.bind(this),
+                                                          get_number: this.api_get_number.bind(this),
             }
         });
         // call start function
@@ -462,17 +462,17 @@ export class WASMEnv extends EventTarget {
         memBuf[ buf + maxLen ] = 0;
         return maxLen;
     }
-    addEventListener<K extends keyof WASMEnvOutputEventMap>(
+    override addEventListener<K extends keyof WASMEnvOutputEventMap>(
         type: K,
         listener: (this: undefined, ev: WASMEnvOutputEventMap[ K ]) => any,
-        options?: boolean | AddEventListenerOptions
+                                                                     options?: boolean | AddEventListenerOptions
     ): void;
-    addEventListener(
+    override addEventListener(
         type: string,
         listener: EventListenerOrEventListenerObject,
         options?: boolean | AddEventListenerOptions
     ): void;
-    addEventListener(
+    override addEventListener(
         type: string,
         listener: EventListenerOrEventListenerObject,
         options?: boolean | AddEventListenerOptions

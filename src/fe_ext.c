@@ -130,6 +130,7 @@ static fe_Object *f_dumpglobal(fe_Context *ctx, fe_Object *arg) {
 }
 /* (memfree) get free pair count */
 static fe_Object *f_memfree(fe_Context *ctx, fe_Object *arg) {
+  fe_collect_garbage(ctx);
   return fe_number(ctx, count_free_pair(ctx));
 }
 /* (strlen obj) get type number of an obj */

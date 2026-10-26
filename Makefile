@@ -4,7 +4,7 @@
 BUILD = build
 LIB_BUILD = build/lib
 LIBC_A = $(LIB_BUILD)/libc.a
-TARGET_NAME = card_maker_plugin_wren
+TARGET_NAME = card_maker_plugin_fe
 TARGET_WAT = $(BUILD)/$(TARGET_NAME).wat
 TARGET_WASM = $(BUILD)/$(TARGET_NAME).wasm
 

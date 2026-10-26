@@ -25,10 +25,13 @@ export async function loadWasmEnv(source: string) {
 /* ------------------------------------------------------------------ */
 const scripts = `
 (do
+    (let vfp nil)
+    (let text "")
+    (let chr 0)
     (= read_file (fn (file_path)
-        (let vfp (vfopen file_path))
-        (let text "")
-        (let chr (vfgetc vfp))
+        (= vfp (vfopen file_path))
+        (= text "")
+        (= chr (vfgetc vfp))
         (while (> chr 0)
             (strappend text chr)
             (= chr (vfgetc vfp))
@@ -43,15 +46,28 @@ const scripts = `
     (print "======== File Content ========")
     (print retext)
     (print "======== File End ========")
+    (= retext (read_file "main.fe"))
+    (print "memfree =" (memfree))
+    (= retext (read_file "main.fe"))
+    (print "memfree =" (memfree))
+    (= retext (read_file "main.fe"))
+    (print "memfree =" (memfree))
+    (= retext (read_file "main.fe"))
+    (print "memfree =" (memfree))
+    (= retext (read_file "main.fe"))
+    (print "memfree =" (memfree))
+    (print "stack =" (stacksize))
+    (dumpglobal)
 
     (let x (cons 2 3))
     (setcar x 999)
     (print "x =" x)
+    (print "x2 =" x)
 )
 `;
 // @ts-ignore
 if (import.meta.main) {
-    const module = await loadWasmEnv("build/card_maker_plugin_wren.wasm");
+    const module = await loadWasmEnv("build/card_maker_plugin_fe.wasm");
     module.addEventListener("outputLine", (event) => {
         console.log(event.data.lastLine);
     });

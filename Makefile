@@ -80,7 +80,11 @@ LFLAGS += --strip-all
 LFLAGS += --gc-sections
 LFLAGS += --lto-O3
 # stack and memory size
-LFLAGS += --export-memory=memory
+# memory: the module owns its memory and exports it to the host
+# (host reads exports.memory). lld>=19 needs --export-memory=memory; lld14
+# exports memory by default and rejects the flag, so probe first.
+LD_EXPORT_MEMORY := $(shell $(LD) --export-memory=memory --version >/dev/null 2>&1 && echo --export-memory=memory)
+LFLAGS += $(LD_EXPORT_MEMORY)
 LFLAGS += --stack-first
 LFLAGS += -z stack-size=262144
 LFLAGS += --initial-memory=4194304 # 4M

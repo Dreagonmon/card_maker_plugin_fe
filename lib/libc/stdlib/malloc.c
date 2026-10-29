@@ -1,61 +1,36 @@
-#include <string.h>
-#undef NULL // redefined in _walloc.h
-#include <stdlib/_walloc.h> // implementation here
-#ifndef NULL  
-#define NULL ((void *) 0)
-#endif
+// libc malloc/free/realloc/calloc backed by Doug Lea's dlmalloc 2.8.6
+// (original release: ftp://gee.cs.oswego.edu/pub/misc/malloc.c, MIT-0).
+// Configured for wasm32 freestanding: no mmap, single-threaded, memory
+// obtained via sbrk() (dlmalloc/sbrk_wasm.c, wasm memory.grow based).
+//
+// Replaces the previous walloc backend (kept as malloc.c.walloc-disabled),
+// which type-punned page metadata and needed -fno-strict-aliasing to
+// survive clang >= 22 optimisations. dlmalloc accesses its headers through
+// properly typed structs, so strict aliasing is safe.
 
-// malloc and free provided by walloc
+#include <stddef.h>
 
-void *calloc(size_t nitems, size_t size) {
-    void *ret;
+#define HAVE_MMAP 0
+/* default MORECORE is sbrk(); our wasm sbrk never shrinks */
+#define MORECORE_CANNOT_TRIM 1
+/* wasm32: max_align_t is 8-byte aligned */
+#define MALLOC_ALIGNMENT ((size_t)8U)
+/* wasm page is 64KiB; dlmalloc's own page guess would be 4KiB */
+#define malloc_getpagesize ((size_t)65536U)
+/* grow the heap in 64KiB steps at least */
+#define DEFAULT_GRANULARITY ((size_t)65536U)
+/* no stdio dependency for malloc_stats */
+#define NO_MALLOC_STATS 1
+/* freestanding: hide the unix headers dlmalloc would probe for */
+#define LACKS_UNISTD_H
+#define LACKS_FCNTL_H
+#define LACKS_SYS_PARAM_H
+#define LACKS_SYS_MMAN_H
+#define LACKS_SYS_TYPES_H
+#define LACKS_STRINGS_H
+#define LACKS_TIME_H
+/* our libc provides <errno.h> with errno + ENOMEM/EINVAL */
+#include <errno.h>
 
-    ret = malloc((size_t)(size * nitems));
-
-    if (ret) {
-        memset(ret, 0x00, (size_t)(size * nitems));
-    }
-
-    return ret;
-}
-
-void *
-realloc(void *ptr, size_t size) {
-
-  if (!ptr) {
-    return malloc(size);
-  }
-
-  if (size == 0) {
-    free(ptr);
-    return NULL;
-  }
-
-  struct page *page = get_page(ptr);
-  unsigned chunk = get_chunk_index(ptr);
-  uint8_t kind = page->header.chunk_kinds[chunk];
-
-  size_t old_size;
-
-  if (kind == LARGE_OBJECT) {
-    struct large_object *obj = get_large_object(ptr);
-    old_size = obj->size;
-  } else {
-    ASSERT(kind < SMALL_OBJECT_CHUNK_KINDS);
-    old_size = (size_t) chunk_kind_to_granules((enum chunk_kind) kind) * GRANULE_SIZE;
-  }
-
-  // 原容量已经够用，直接原地返回。
-  if (size <= old_size) {
-    return ptr;
-  }
-
-  void *new_ptr = malloc(size);
-  if (!new_ptr) {
-    return NULL;
-  }
-
-  memcpy(new_ptr, ptr, old_size);
-  free(ptr);
-  return new_ptr;
-}
+#include "dlmalloc/dlmalloc.c"
+/* no USE_DL_PREFIX: dlmalloc.c defines malloc/free/calloc/realloc directly */
